@@ -99,6 +99,7 @@ jobs:
 
       - npm-config/set-registry:
           registry-prurl: //registry.npmjs.org/
+          scope: ""
           auth-token: $NPM_TOKEN
 
       - run:
