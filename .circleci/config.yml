@@ -20,6 +20,9 @@ whitelist: &whitelist
     - tslint.json
 version: 2.1
 
+orbs:
+  npm-config: cobli/npm-config@1.0.0
+
 jobs:
   checkout:
     <<: *defaults
@@ -93,6 +96,10 @@ jobs:
       - run:
           name: Write version to package.json
           command: $(yarn bin)/dot-json package.json version ${CIRCLE_TAG:1}
+
+      - npm-config/set-registry:
+          registry-prurl: //registry.npmjs.org/
+          auth-token: $NPM_TOKEN
 
       - run:
           name: Publish to NPM
