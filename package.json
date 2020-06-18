@@ -1,6 +1,6 @@
 {
   "name": "react-morefinity",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "React Morefinity is a library for async fetching data on various events",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
