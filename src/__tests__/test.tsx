@@ -54,7 +54,7 @@ describe('<MorefinityContainer />', () => {
         return (
             <div className="App" style={{ height: '290px' }}>
                 <MorefinityContainer
-                    itemsTotal={20000}
+                    notAllLoaded={true}
                     isLoading={isLoading}
                     scrollOffset={100}
                     onScrollEnd={onScrollEnd}
@@ -76,7 +76,7 @@ describe('<MorefinityContainer />', () => {
 
     const props: IMorefinityProps = {
         isLoading: false,
-        itemsTotal: 2000,
+        notAllLoaded: true,
         scrollOffset: 50,
         loader,
         height: 400,

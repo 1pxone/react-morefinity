@@ -24,7 +24,7 @@ export interface IMorefinityProps {
     isLoading?: boolean;
     loader?: React.ReactElement;
     height?: number;
-    itemsTotal?: number;
+    notAllLoaded?: boolean;
     scrollOffset?: number;
     onScrollEnd?(offset: number): void;
 }
@@ -73,11 +73,6 @@ export const MorefinityItem: React.FC<IMorefinityPropsItemProps> = ({
     );
 };
 
-const getTotalMeasuredHeight = (pageMeta: IItemMeta) => {
-    const itemsMetaValues = Object.values(pageMeta);
-    return itemsMetaValues.reduce((acc, page) => acc + page, 0);
-};
-
 interface IMorefinityContainerLoaderProps {
     loader?: React.ReactElement;
     isLoading?: boolean;
@@ -94,10 +89,10 @@ export const MorefinityListLoader = ({
 };
 
 export const MorefinityContainer: React.FC<IMorefinityProps> = React.memo(
-    ({ isLoading, height, itemsTotal, onScrollEnd, scrollOffset = 0, loader, children }) => {
+    ({ isLoading, height, notAllLoaded, onScrollEnd, scrollOffset = 0, loader, children }) => {
         const [offsetHeight, setOffsetHeight] = useState(0);
 
-        const [_scrollTop, _setScrollTop] = useDebouncedState(0, 50);
+        const [scrollTop, setScrollTop] = useDebouncedState(0, 50);
 
         const { ref: containerRef, size } = useObservedSize<HTMLDivElement>() as {
             ref: RefObject<HTMLDivElement>;
@@ -106,23 +101,24 @@ export const MorefinityContainer: React.FC<IMorefinityProps> = React.memo(
 
         const [itemsMeta, setItemMeta] = useState<IItemMeta>({});
 
-        const totalMeasuredHeight = useMemo(() => getTotalMeasuredHeight(itemsMeta), [itemsMeta]);
-
         const avgItemHeight = useMemo(() => {
-            const itemsMetaValues = Object.values(itemsMeta);
-            return itemsMetaValues.length ? totalMeasuredHeight / itemsMetaValues.length : 0;
-        }, [totalMeasuredHeight, itemsMeta]);
+            const measuredHeights = Object.values(itemsMeta);
+            return measuredHeights.length
+                ? measuredHeights.reduce((total, value) => total + value, 0) /
+                      measuredHeights.length
+                : 0;
+        }, [itemsMeta]);
 
         const [minPredicted, setMinPredictedIndex] = useState(0);
 
         const [maxPredicted, setMaxPredictedIndex] = useState(0);
 
         useEffect(() => {
-            const predictionRation = (_scrollTop - offsetHeight) / avgItemHeight;
+            const predictionRation = (scrollTop - offsetHeight) / avgItemHeight;
             const roundingFunction = predictionRation > 1 ? Math.ceil : Math.floor;
 
             const newMinPredicted = Math.max(
-                _scrollTop
+                scrollTop
                     ? Math.min(roundingFunction(predictionRation), React.Children.count(children))
                     : 0,
                 0
@@ -133,8 +129,8 @@ export const MorefinityContainer: React.FC<IMorefinityProps> = React.memo(
 
             const newMaxPredicted = Math.min(
                 avgItemHeight
-                    ? (_scrollTop
-                          ? Math.ceil(_scrollTop / avgItemHeight) + positivePredictedCount
+                    ? (scrollTop
+                          ? Math.ceil(scrollTop / avgItemHeight) + positivePredictedCount
                           : Math.ceil(offsetHeight / avgItemHeight)) + positivePredictedCount
                     : 1,
                 React.Children.count(children)
@@ -146,26 +142,26 @@ export const MorefinityContainer: React.FC<IMorefinityProps> = React.memo(
             if (maxPredicted !== newMaxPredicted) {
                 setMaxPredictedIndex(newMaxPredicted);
             }
-        }, [_scrollTop, offsetHeight, avgItemHeight, React.Children.count(children)]);
+        }, [scrollTop, offsetHeight, avgItemHeight, React.Children.count(children)]);
 
-        const listHeight = useMemo(() => React.Children.count(children) * avgItemHeight, [
-            children,
-            avgItemHeight,
-        ]);
+        const listHeight = useMemo(() => {
+            const measuredHeights = Object.values(itemsMeta);
+            const unmeasuredCount = React.Children.count(children) - measuredHeights.length;
+            return (
+                measuredHeights.reduce((total, value) => total + value, 0) +
+                unmeasuredCount * avgItemHeight
+            );
+        }, [children, avgItemHeight, itemsMeta]);
 
         const isScrollEnd = useMemo(() => {
             return (
+                containerRef?.current &&
                 Boolean(offsetHeight) &&
-                Boolean(_scrollTop) &&
-                Boolean(listHeight) &&
-                offsetHeight + _scrollTop >= listHeight - scrollOffset
+                Boolean(scrollTop) &&
+                offsetHeight + scrollTop >= containerRef?.current?.scrollHeight - scrollOffset
             );
-        }, [offsetHeight, _scrollTop, listHeight, scrollOffset]);
+        }, [offsetHeight, scrollTop, scrollOffset, containerRef]);
 
-        const notAllLoaded = useMemo(
-            () => typeof itemsTotal !== 'undefined' && React.Children.count(children) < itemsTotal,
-            [children, itemsTotal]
-        );
         useEffect(() => {
             if (containerRef.current) {
                 setOffsetHeight(containerRef?.current?.offsetHeight);
@@ -226,7 +222,7 @@ export const MorefinityContainer: React.FC<IMorefinityProps> = React.memo(
         }, [listHeight, minPredicted, avgItemHeight, offsetHeight]);
 
         const onScroll = (e: React.UIEvent<HTMLElement>) => {
-            _setScrollTop(e.currentTarget.scrollTop);
+            setScrollTop(e.currentTarget.scrollTop);
         };
 
         return (

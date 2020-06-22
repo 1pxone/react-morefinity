@@ -15,4 +15,3 @@ React virtual scroll implementation
 * Add SSR support
 * Tests
 * Docs
-* Fix additional space at the end of list
