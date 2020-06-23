@@ -1,7 +1,7 @@
 {
   "name": "react-morefinity",
-  "version": "1.0.2",
-  "description": "React Morefinity is a library for async fetching data on various events",
+  "version": "1.0.4",
+  "description": "React virtual scroll with flexible api and onScrollEnd callback",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "scripts": {
