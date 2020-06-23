@@ -114,12 +114,12 @@ export const MorefinityContainer: React.FC<IMorefinityProps> = React.memo(
         const [maxPredicted, setMaxPredictedIndex] = useState(0);
 
         useEffect(() => {
-            const predictionRation = (scrollTop - offsetHeight) / avgItemHeight;
-            const roundingFunction = predictionRation > 1 ? Math.ceil : Math.floor;
+            const predictionRatio = (scrollTop - offsetHeight) / avgItemHeight;
+            const roundingFunction = predictionRatio > 1 ? Math.ceil : Math.floor;
 
             const newMinPredicted = Math.max(
                 scrollTop
-                    ? Math.min(roundingFunction(predictionRation), React.Children.count(children))
+                    ? Math.min(roundingFunction(predictionRatio), React.Children.count(children))
                     : 0,
                 0
             );
@@ -227,7 +227,7 @@ export const MorefinityContainer: React.FC<IMorefinityProps> = React.memo(
 
         return (
             <div
-                style={{ position: 'relative', height: height ?? 'inherit' }}
+                style={{ position: 'relative', height: height ?? 'inherit', overflow: 'auto' }}
                 ref={containerRef}
                 onScroll={onScroll}
             >
