@@ -23,6 +23,7 @@ function useDebouncedState<T>(initialValue: T, delay: number = 50): [T, (newValu
 export interface IMorefinityProps {
     isLoading?: boolean;
     loader?: React.ReactElement;
+    maxHeight?: number;
     height?: number;
     notAllLoaded?: boolean;
     scrollOffset?: number;
@@ -88,9 +89,23 @@ export const MorefinityListLoader = ({
     return isLoading ? <div style={getMorefinityElementStyle(listHeight)}>{element}</div> : null;
 };
 
-export const MorefinityContainer: React.FC<IMorefinityProps> = React.memo(
-    ({ isLoading, height, notAllLoaded, onScrollEnd, scrollOffset = 0, loader, children }) => {
+export const Morefinity: React.FC<IMorefinityProps> = React.memo(
+    ({
+        isLoading,
+        height,
+        notAllLoaded,
+        maxHeight,
+        onScrollEnd,
+        scrollOffset = 0,
+        loader,
+        children,
+    }) => {
         const [offsetHeight, setOffsetHeight] = useState(0);
+
+        const { ref, size: contentSize } = useObservedSize<HTMLDivElement>() as {
+            ref: RefObject<HTMLDivElement>;
+            size: IObservableSize;
+        };
 
         const [scrollTop, setScrollTop] = useDebouncedState(0, 50);
 
@@ -211,7 +226,16 @@ export const MorefinityContainer: React.FC<IMorefinityProps> = React.memo(
             });
         }, [listHeight, children, minPredicted, maxPredicted]);
 
-        const pageWrapperStyles: React.CSSProperties = useMemo(() => {
+        const wrapperStyles: React.CSSProperties = useMemo(() => {
+            return {
+                position: 'relative',
+                height: maxHeight ? contentSize.height : height ?? 'inherit',
+                overflow: 'auto',
+                maxHeight,
+            };
+        }, [contentSize.height, maxHeight, height]);
+
+        const containerStyles: React.CSSProperties = useMemo(() => {
             const offset = Math.max(minPredicted - 1, 0) * avgItemHeight;
             return {
                 position: 'absolute',
@@ -226,12 +250,10 @@ export const MorefinityContainer: React.FC<IMorefinityProps> = React.memo(
         };
 
         return (
-            <div
-                style={{ position: 'relative', height: height ?? 'inherit', overflow: 'auto' }}
-                ref={containerRef}
-                onScroll={onScroll}
-            >
-                <div style={pageWrapperStyles}>{renderItems()}</div>
+            <div ref={containerRef} onScroll={onScroll} style={wrapperStyles}>
+                <div ref={ref} style={containerStyles}>
+                    {renderItems()}
+                </div>
                 <MorefinityListLoader
                     loader={loader}
                     isLoading={isLoading}
