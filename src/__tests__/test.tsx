@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { shallow, ShallowWrapper } from 'enzyme';
-import { MorefinityListLoader, MorefinityContainer, IMorefinityProps } from '../index';
+import { MorefinityListLoader, Morefinity, IMorefinityProps } from '../index';
 import { useState } from 'react';
 
 const mockedItemHeight = 30;
@@ -36,8 +36,8 @@ const fetchItems = async (
     });
 };
 
-describe('<MorefinityContainer />', () => {
-    const MorefinityContainerTest = () => {
+describe('<Morefinity />', () => {
+    const MorefinityTest = () => {
         const [items, setItems] = useState<{ id: number; text: string }[]>([
             {
                 id: 0,
@@ -53,18 +53,18 @@ describe('<MorefinityContainer />', () => {
         };
         return (
             <div className="App" style={{ height: '290px' }}>
-                <MorefinityContainer
+                <Morefinity
                     notAllLoaded={true}
                     isLoading={isLoading}
                     scrollOffset={100}
                     onScrollEnd={onScrollEnd}
                 >
                     {items.map(itemRenderer)}
-                </MorefinityContainer>
+                </Morefinity>
             </div>
         );
     };
-    const container = shallow(<MorefinityContainerTest />);
+    const container = shallow(<MorefinityTest />);
 
     let wrapper: ShallowWrapper;
     const useEffect = jest.spyOn(React, 'useEffect');
@@ -84,21 +84,21 @@ describe('<MorefinityContainer />', () => {
     };
 
     test('should pass scrollOffset prop', () => {
-        expect(container.find(MorefinityContainer).props().scrollOffset).toBe(100);
+        expect(container.find(Morefinity).props().scrollOffset).toBe(100);
     });
 
     test('should request items with start offset and limit from props', () => {
         mockUseEffect();
-        wrapper = shallow(<MorefinityContainer {...props} />);
+        wrapper = shallow(<Morefinity {...props} />);
         expect(props.onScrollEnd).toBeCalledTimes(0);
     });
 
     test('container height should be equal to passed property', () => {
-        wrapper = shallow(<MorefinityContainer {...props} />);
+        wrapper = shallow(<Morefinity {...props} />);
         expect(wrapper.find('div').props().height).toBe(props.height);
     });
 
-    test('should render <MorefinityContainer />', () => {
+    test('should render <Morefinity />', () => {
         expect(wrapper.length).toBe(1);
     });
 

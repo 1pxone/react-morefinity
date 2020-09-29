@@ -5,7 +5,7 @@
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "scripts": {
-    "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
+    "format": "prettier --write \"src/**/*.ts*\"",
     "lint": "tslint -p tsconfig.json",
     "test-jest": "jest --config jestconfig.json",
     "test": "echo \"No tests to execute\" && exit 0",
